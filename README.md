@@ -15,7 +15,7 @@ config.js               Configuración de la web: nombre, saludo, modelo, límit
 server.py               Servidor de la web + puente seguro hacia oMLX (guarda la API key)
 publicar.sh             Publica la web en internet con un túnel de Cloudflare
 mcp_tickets.py          Servidor MCP «tickets»: registro de solicitudes en SQLite
-gestion.py, gestion/    Página de gestión de tickets (solo local, puerto 5175)
+gestion.py, gestion/    Página de gestión de tickets (solo local, puerto 5185)
 mcp.example.json        Plantilla para conectar ese servidor MCP a oMLX
 .env                    Tu API key y ajustes del servidor (privado, ignorado por git)
 contexto.js             Qué sabe el asistente, de qué habla y cómo responde
@@ -32,7 +32,7 @@ img/                    Logo de Faena (símbolo, texto) y favicons
    ```
 
    y edita `.env` para poner tu clave en `OMLX_API_KEY`.
-3. Arranca el servidor y abre http://localhost:5174:
+3. Arranca el servidor y abre http://localhost:5184:
 
    ```bash
    python3 server.py
@@ -82,9 +82,19 @@ Web ─«Enviar solicitud»→ server.py ─/v1/mcp/execute→ oMLX ─stdio→ 
 2. En oMLX: panel → Settings → MCP → *Config path* = ruta de tu `mcp.json` (o `mcp.config_path` en `~/.omlx/settings.json`).
 3. Reinicia oMLX (`omlx restart`). En `http://localhost:8000/health` debe aparecer `"mcp": {"servers_connected": 1, "tools_available": 4}`.
 
+**Varias copias del proyecto en el mismo Mac:** oMLX carga un solo archivo MCP, así que conviene uno compartido fuera de los proyectos (por ejemplo `~/.config/omlx/mcp.json`) con un servidor por copia, cada uno con su propia base de datos:
+
+```json
+{ "mcpServers": {
+    "tickets":    { "command": "/usr/bin/python3", "args": ["/RUTA/A/omlx-asistente-web-v2/mcp_tickets.py"] },
+    "tickets_v3": { "command": "/usr/bin/python3", "args": ["/RUTA/A/omlx-asistente-web-v3/mcp_tickets.py"] } } }
+```
+
+y en el `.env` de cada copia, sus herramientas y puertos: `TICKETS_MCP_TOOL=tickets_v3__crear_ticket`, `ATTACH_MCP_TOOL=tickets_v3__adjuntar_archivo`, `PORT=5184`, `ADMIN_PORT=5185`.
+
 **Ver y gestionar tickets:**
 
-- **Página de gestión**: abre http://localhost:5175 mientras corre `server.py` o `publicar.sh`. Muestra el resumen por estado, filtros y búsqueda, y el detalle de cada ticket con su conversación; permite cambiar el estado y agregar comentarios al historial. Se actualiza sola cada 15 s.
+- **Página de gestión**: abre http://localhost:5185 mientras corre `server.py` o `publicar.sh`. Muestra el resumen por estado, filtros y búsqueda, y el detalle de cada ticket con su conversación; permite cambiar el estado y agregar comentarios al historial. Se actualiza sola cada 15 s.
   Es **solo local**: escucha en un puerto aparte que el túnel no publica, rechaza otros hosts y peticiones de otros sitios. Se puede cambiar el puerto con `ADMIN_PORT` en `.env` (`0` la desactiva) o abrirla sola con `python3 gestion.py`.
 - **Terminal**: `python3 mcp_tickets.py listar`, o consultas SQL con `sqlite3 -box tickets/tickets.db "SELECT id, estado, titulo FROM tickets;"`.
 
