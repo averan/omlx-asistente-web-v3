@@ -61,8 +61,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 }
 .nav { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.brand-symbol { height: 40px; width: 40px; }
-.brand-wordmark { height: 32px; width: auto; }
+.brand picture { display: flex; }
+.brand-logo { height: 22px; width: auto; display: block; }
 .nav nav { display: flex; gap: 32px; }
 .nav nav a { text-decoration: none; color: var(--heading); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; transition: color .15s; }
 .nav nav a:hover { color: var(--coral); }
@@ -131,7 +131,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 
 @media (prefers-color-scheme: dark) {
   /* el azul marino del logo no contrasta sobre fondo oscuro: se muestra en blanco */
-  .brand-wordmark { filter: brightness(0) invert(1); opacity: .92; }
   .site-header { box-shadow: 0 2px 12px rgba(0, 0, 0, .4); }
   .hero::after { border-color: rgba(255, 75, 108, .45); }
 }
