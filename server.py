@@ -82,6 +82,8 @@ EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 slots = threading.BoundedSemaphore(MAX_CONCURRENT)
 hits = defaultdict(deque)
 hits_lock = threading.Lock()
+models_cache = {'t': None, 'ids': set()}
+models_lock = threading.Lock()
 
 
 def sniff_type(data, name):
@@ -168,6 +170,33 @@ def upstream(method, path, body=None, timeout=600):
         headers['Authorization'] = f'Bearer {API_KEY}'
     conn.request(method, path, body=body, headers=headers)
     return conn, conn.getresponse()
+
+
+def get_json(path):
+    conn, res = upstream('GET', path, timeout=15)
+    try:
+        return json.loads(res.read() or b'{}')
+    finally:
+        conn.close()
+
+
+def usable_models():
+    """Modelos que un visitante puede usar: los ya cargados (o el predeterminado si no hay ninguno).
+    Evita que alguien pida otro modelo y obligue a oMLX a cambiar el que está en memoria."""
+    with models_lock:
+        if models_cache['t'] is not None and time.monotonic() - models_cache['t'] < 30:
+            return models_cache['ids']
+        ids = set()
+        try:
+            ids = {m.get('id') for m in get_json('/v1/models/status').get('models', []) if m.get('loaded')}
+            if not ids:  # sin modelo en memoria: se admite el predeterminado (oMLX lo carga al preguntar)
+                default = get_json('/health').get('default_model')
+                if default:
+                    ids.add(default)
+        except (OSError, ValueError):
+            pass
+        models_cache.update(t=time.monotonic(), ids=ids)
+        return ids
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -332,6 +361,9 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError
         except ValueError:
             self.error(400, 'Petición no válida.'); return 400
+        if body.get('model') not in usable_models():
+            models_cache['t'] = None  # puede que el modelo haya cambiado: se vuelve a consultar la próxima vez
+            self.error(404, 'El asistente se está actualizando. Inténtalo de nuevo.'); return 404
         body['max_tokens'] = min(int(body.get('max_tokens') or MAX_TOKENS), MAX_TOKENS)
         # los visitantes nunca pueden usar herramientas (p. ej. las MCP de tickets que oMLX añade a los chats)
         body.pop('tools', None)
