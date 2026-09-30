@@ -306,9 +306,9 @@ class Handler(BaseHTTPRequestHandler):
             raw = res.read()
             conn.close()
         except OSError:
-            return self.error(502, 'El servidor del modelo no está disponible en este momento.')
+            return self.error(502, 'El asistente no está disponible en este momento. Inténtalo en unos minutos.')
         if res.status != 200:
-            return self.error(res.status, 'El servidor del modelo respondió con un error.')
+            return self.error(res.status, 'El asistente respondió con un error. Inténtalo de nuevo.')
         data = json.loads(raw or b'{}')
         if path == '/v1/models/status':
             # no exponer rutas locales, tamaños ni configuración interna
@@ -344,7 +344,7 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 conn, res = upstream('POST', PROXY_CHAT, json.dumps(body).encode())
             except OSError:
-                self.error(502, 'El servidor del modelo no está disponible en este momento.'); return 502
+                self.error(502, 'El asistente no está disponible en este momento. Inténtalo en unos minutos.'); return 502
             self.send_response(res.status)
             self.send_header('Content-Type', res.getheader('Content-Type', 'application/json'))
             self.send_header('Cache-Control', 'no-cache')

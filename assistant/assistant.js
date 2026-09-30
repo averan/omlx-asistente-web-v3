@@ -18,6 +18,7 @@
     modelLabel: '', // nombre visible del modelo; vacío = id real de oMLX
     avatar: '',     // URL de una imagen para la cabecera del panel; vacío = degradado
     tickets: null,  // { endpoint: '/api/tickets' } activa el botón «Enviar solicitud»
+    footnote: 'Admite imágenes, PDF, Word, Excel y texto', // nota bajo el cuadro de texto
   }, window.OMLX_ASSISTANT || {});
   const base = cfg.baseUrl.replace(/\/+$/, '');
 
@@ -123,7 +124,7 @@
           <textarea class="oa-input" rows="1" placeholder="Escribe tu pregunta…" aria-label="Mensaje"></textarea>
           <button class="oa-send" type="submit" aria-label="Enviar" disabled>${ICONS.send}${ICONS.stop}</button>
         </div>
-        <div class="oa-footnote">Se ejecuta en local con oMLX · imágenes, PDF, Word, Excel y texto</div>
+        <div class="oa-footnote"></div>
       </form>
       <div class="oa-resize oa-resize-n" data-dir="n" aria-hidden="true"></div>
       <div class="oa-resize oa-resize-w" data-dir="w" aria-hidden="true"></div>
@@ -140,6 +141,7 @@
   const input = $('.oa-input'), sendBtn = $('.oa-send'), form = $('.oa-composer');
   const tray = $('.oa-tray'), fileInput = $('.oa-file');
   $('#oa-title').textContent = cfg.assistantName;
+  $('.oa-footnote').textContent = cfg.footnote;
   if (cfg.avatar) $('.oa-avatar').replaceWith(Object.assign(document.createElement('img'), { className: 'oa-avatar oa-avatar-img', src: cfg.avatar, alt: '' }));
 
   // ---------- tamaño del panel (arrastrar bordes / ampliar) ----------
@@ -226,7 +228,7 @@
     if (!res.ok) {
       let msg = await res.text();
       try { const j = JSON.parse(msg); msg = j.error?.message || (typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail)) || msg; } catch {}
-      const err = new Error(res.status === 401 ? 'La API key no es válida (revisa config.js).' : `${msg} (código ${res.status})`);
+      const err = new Error(res.status === 401 ? 'Error de configuración del asistente. Avisa a la Mesa de Ayuda.' : `${msg} (código ${res.status})`);
       err.status = res.status; throw err;
     }
     return res;
@@ -236,7 +238,7 @@
   // Elige automáticamente el modelo: el cargado > el por defecto > el primero disponible.
   function detectModel() {
     if (detecting) return detecting;
-    setStatus('checking', 'Buscando modelo…');
+    setStatus('checking', 'Conectando…');
     detecting = (async () => {
       let lastErr, all = [];
       const typeOf = id => all.find(m => m.id === id)?.model_type || null;
@@ -255,8 +257,8 @@
         if (l.data?.[0]) { model = l.data[0].id; modelType = typeOf(model); setStatus('ok', `${modelName()} · se cargará al preguntar`); return model; }
       } catch (e) { lastErr = e; }
       model = null; modelType = null;
-      setStatus('error', lastErr?.status === 401 ? 'API key no válida' : 'oMLX no disponible');
-      throw lastErr || new Error('oMLX no tiene modelos disponibles.');
+      setStatus('error', lastErr?.status === 401 ? 'Error de configuración' : 'Asistente no disponible');
+      throw lastErr || new Error('El asistente no está disponible en este momento.');
     })().finally(() => { detecting = null; });
     return detecting;
   }
@@ -668,7 +670,7 @@
       });
       setStatus('ok', modelName());
       await readSSE(res, j => {
-        if (j.error) throw new Error(j.error.message || 'Error del modelo');
+        if (j.error) throw new Error(j.error.message || 'Error al generar la respuesta');
         if (j.model === 'keepalive') return;
         const piece = j.choices?.[0]?.delta?.content;
         if (piece) { content += piece; if (!frame) frame = requestAnimationFrame(paint); }
@@ -681,7 +683,7 @@
         if (history !== convo) return;
         history.pop();
         saveHistory();
-        if (e.network) setStatus('error', 'oMLX no disponible');
+        if (e.network) setStatus('error', 'Asistente no disponible');
         if (e.status === 404 || e.status === 400) model = null; // el modelo pudo descargarse: re-detectar
         showError(e.message, () => { userBubble.remove(); send(text, attachments); });
         return;
@@ -694,7 +696,7 @@
     if (history !== convo) return; // se inició una conversación nueva mientras respondía
     content = content.replace(/^\s+/, '');
     if (!content) {
-      bubble.innerHTML = `<em>${stopped ? 'Detenido.' : 'El modelo no devolvió texto. Prueba a aumentar maxTokens en config.js.'}</em>`;
+      bubble.innerHTML = `<em>${stopped ? 'Detenido.' : 'No se recibió respuesta. Inténtalo de nuevo.'}</em>`;
       if (!stopped) { history.pop(); saveHistory(); return; }
       content = '_(detenido)_';
     } else {
@@ -715,7 +717,7 @@
     const ready = pending.filter(p => p.status === 'ready');
     if (!text && !ready.length) return;
     if (ready.some(a => a.type === 'image') && modelType && !/vlm/i.test(modelType)) {
-      showError(`El modelo ${modelName()} solo entiende texto y no puede ver imágenes. Carga un modelo de visión (VLM) en oMLX o quita las imágenes.`);
+      showError('En este momento el asistente no puede analizar imágenes. Quita las imágenes o describe el problema con texto.');
       return;
     }
     const attachments = ready.map(({ id, file, type, name, info, url, text }) => {

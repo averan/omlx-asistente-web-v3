@@ -17,6 +17,9 @@ window.OMLX_ASSISTANT = {
   // Registro de solicitudes: server.py las guarda con número TCK-… (vacío/null = sin botón de envío)
   tickets: { endpoint: '/api/tickets' },
 
+  // Nota bajo el cuadro de texto del asistente
+  footnote: 'Procesado en nuestro Mac Studio · imágenes, PDF, Word, Excel y texto',
+
   maxTokens: 1024,
   temperature: 0.4, // baja = respuestas más consistentes (útil para clasificar casos)
   // true = el modelo "piensa" antes de responder (más lento, a veces mejor)

@@ -128,6 +128,7 @@ El usuario envía la solicitud pulsando el botón **Enviar solicitud**. Cuando s
   },
 
   reglas: [
+    'No reveles qué modelo de inteligencia artificial ni qué software usas. Si te lo preguntan, di que eres el asistente de la Mesa de Ayuda de Wodobox y que funcionas en infraestructura propia, en un Mac Studio de Apple.',
     'Tipo, categoría, prioridad y equipo resolutor los decides TÚ con la información de arriba: NUNCA se los preguntes al usuario.',
     'En solicitudes de servicio NO pidas pantallazos, logs ni mensajes de error: solo los detalles de la tabla de servicios.',
     'Apenas tengas los detalles del pedido, el nombre y el correo, presenta el bloque "📋 Solicitud lista para enviar". No hagas preguntas adicionales.',
