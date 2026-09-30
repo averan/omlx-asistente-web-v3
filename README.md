@@ -1,4 +1,4 @@
-# Faena · Asistente local con oMLX
+# Wodobox · Asistente local con oMLX
 
 Página web de demostración con un asistente de chat flotante (esquina inferior derecha) que responde usando el modelo que tengas cargado en **oMLX**.
 
@@ -19,7 +19,7 @@ gestion.py, gestion/    Página de gestión de tickets (solo local, puerto 5185)
 mcp.example.json        Plantilla para conectar ese servidor MCP a oMLX
 .env                    Tu API key y ajustes del servidor (privado, ignorado por git)
 contexto.js             Qué sabe el asistente, de qué habla y cómo responde
-img/                    Logo de Faena (símbolo, texto) y favicons
+img/                    Logo, avatar y favicons de Wodobox
 ```
 
 ## Primeros pasos
@@ -50,7 +50,7 @@ brew install cloudflared   # solo la primera vez
 El script arranca `server.py`, abre un túnel gratuito de Cloudflare y muestra la URL pública (`https://….trycloudflare.com`). Cualquiera con esa URL puede usar el asistente, que responde con el modelo cargado en **este Mac**. Ctrl+C deja de publicar.
 
 - **Requisitos:** oMLX en marcha y el Mac encendido (el script evita que se duerma mientras publica).
-- **La URL cambia** cada vez que ejecutas el script y no tiene garantía de disponibilidad. Para una dirección fija (p. ej. `soporte.faenacs.com`) se usa un túnel con nombre y una cuenta gratuita de Cloudflare; no hace falta cambiar el código.
+- **La URL cambia** cada vez que ejecutas el script y no tiene garantía de disponibilidad. Para una dirección fija (p. ej. `soporte.wodobox.com`) se usa un túnel con nombre y una cuenta gratuita de Cloudflare; no hace falta cambiar el código.
 - **Qué se expone:** solo los archivos de la web (`index.html`, `config.js`, `contexto.js`, `css/`, `assistant/`, `img/`) y 4 endpoints de oMLX (`/v1/chat/completions`, `/v1/models`, `/v1/models/status` resumido y `/health`). Todo lo demás, incluido `.env`, da 404.
 - **Protecciones** (ajustables en `.env`): máximo 2 respuestas generándose a la vez (`MAX_CONCURRENT`), 20 mensajes por minuto por visitante (`RATE_PER_MIN`), respuestas de hasta 1024 tokens (`MAX_TOKENS`) y mensajes de hasta 25 MB (`MAX_BODY_MB`).
 - **Ten en cuenta:** quien tenga la URL usa la potencia de tu Mac. El prompt de sistema (`contexto.js`) se ejecuta en el navegador, así que alguien con conocimientos técnicos podría modificarlo en su propia sesión.
@@ -115,8 +115,8 @@ Con `expose_tools` activado en oMLX, también puedes preguntar desde **tu** chat
 |---|---|
 | `baseUrl` | Dónde está la API. `''` = el mismo `server.py` que sirve la web (recomendado) |
 | `assistantName`, `greeting` | Nombre y saludo inicial del asistente |
-| `avatar` | Imagen de la cabecera del panel del asistente (p. ej. `img/faena-symbol.png`) |
-| `modelLabel` | Nombre del modelo que se muestra en el panel (p. ej. `Faena-Bot`). Vacío = id real del modelo en oMLX |
+| `avatar` | Imagen de la cabecera del panel del asistente (p. ej. `img/wodobox-avatar.png`) |
+| `modelLabel` | Nombre del modelo que se muestra en el panel (p. ej. `Wodobox-Bot`). Vacío = id real del modelo en oMLX |
 | `systemPrompt` | Instrucciones de comportamiento del modelo |
 | `tickets` | `{ endpoint: '/api/tickets' }` activa el botón «Enviar solicitud». `null` lo desactiva |
 | `maxTokens`, `temperature` | Longitud máxima y creatividad de las respuestas |

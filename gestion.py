@@ -22,14 +22,15 @@ import mcp_tickets as mt
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PAGE = os.path.join(ROOT, 'gestion', 'index.html')
 INLINE_TYPES = {'image/png', 'image/jpeg', 'image/gif', 'image/webp'}  # el resto se descarga, nunca se muestra
-ASSETS = {'/favicon.ico': ('img/favicon.ico', 'image/x-icon'), '/logo.png': ('img/faena-symbol.png', 'image/png')}
+ASSETS = {'/favicon.ico': ('img/wodobox-favicon.ico', 'image/x-icon'),
+          '/logo.svg': ('img/wodobox-logo.svg', 'image/svg+xml'), '/logo-blanco.svg': ('img/wodobox-logo-blanco.svg', 'image/svg+xml')}
 
 
 def make_handler(port):
     allowed_hosts = {f'localhost:{port}', f'127.0.0.1:{port}'}
 
     class AdminHandler(BaseHTTPRequestHandler):
-        server_version = 'FaenaGestion'
+        server_version = 'WodoboxGestion'
         sys_version = ''
 
         def log_message(self, fmt, *args):

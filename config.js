@@ -6,10 +6,10 @@ window.OMLX_ASSISTANT = {
 
   assistantName: 'Asistente',
   // Nombre que se muestra para el modelo (el real se detecta solo y se usa internamente)
-  modelLabel: 'Faena-Bot',
+  modelLabel: 'Wodobox-Bot',
   // Imagen de la cabecera del panel (vacío = degradado de color)
-  avatar: 'img/faena-symbol.png',
-  greeting: 'Hola, soy Faena-Bot de la Mesa de Ayuda. Puedo registrar un problema o pedir un servicio por ti (licencias, accesos, VPN, software, equipos). ¿Qué necesitas?',
+  avatar: 'img/wodobox-avatar.png',
+  greeting: 'Hola, soy Wodobox-Bot de la Mesa de Ayuda. Puedo registrar un problema o pedir un servicio por ti (licencias, accesos, VPN, software, equipos). ¿Qué necesitas?',
   // Instrucciones generales extra. Lo principal (identidad, conocimiento, temas,
   // reglas y respuestas a preguntas) se define en contexto.js
   systemPrompt: 'Usa Markdown cuando ayude a la claridad.',

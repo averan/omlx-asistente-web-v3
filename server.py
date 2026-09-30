@@ -171,7 +171,7 @@ def upstream(method, path, body=None, timeout=600):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'FaenaAsistente'
+    server_version = 'WodoboxAsistente'
     sys_version = ''
 
     # ---------- utilidades ----------
