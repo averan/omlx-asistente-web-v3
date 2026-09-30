@@ -9,7 +9,6 @@
     apiKey: '',
     assistantName: 'Asistente',
     greeting: '¡Hola! ¿En qué puedo ayudarte?',
-    systemPrompt: 'Eres un asistente útil y conciso.',
     maxTokens: 1024,
     temperature: 0.7,
     enableThinking: false,
@@ -39,35 +38,10 @@
   const originals = new Map(); // fid -> File original (solo en memoria, para guardarlo como evidencia)
   const modelName = () => cfg.modelLabel || model;
 
-  // ---------- contexto (contexto.js) ----------
+  // ---------- contexto (contexto.js: respuestas fijas y sugerencias; el prompt lo pone server.py) ----------
   const ctx = window.OMLX_CONTEXT || null;
   const list_ = a => (Array.isArray(a) ? a : a ? [a] : []).filter(Boolean);
   const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[¿?¡!.,;:()"']/g, ' ').replace(/\s+/g, ' ').trim();
-
-  // Construye el prompt de sistema a partir de contexto.js + systemPrompt de config.js
-  function buildSystemPrompt() {
-    if (!ctx) return cfg.systemPrompt;
-    const out = [];
-    if (ctx.identidad) out.push(ctx.identidad.trim());
-    const bullets = a => list_(a).map(x => `- ${x}`).join('\n');
-    if (list_(ctx.tono).length) out.push(`## Tono y estilo\n${bullets(ctx.tono)}`);
-    if (ctx.conocimiento?.trim()) out.push(`## Información que conoces\nEsta es tu única fuente de verdad sobre la organización:\n\n${ctx.conocimiento.trim()}`);
-    const temas = list_(ctx.temasPermitidos);
-    if (temas.length) {
-      const fuera = ctx.fueraDeTema || {};
-      const regla = fuera.permitir
-        ? 'Si te preguntan por otros temas, puedes responder brevemente, pero reconduce la conversación hacia estos temas.'
-        : `Si la pregunta NO está relacionada con estos temas, no la respondas y contesta exactamente: "${fuera.respuesta || 'Lo siento, solo puedo ayudarte con temas relacionados con este sitio.'}"`;
-      out.push(`## Temas sobre los que puedes responder\n${bullets(temas)}\n\n${regla}`);
-    }
-    if (list_(ctx.reglas).length) out.push(`## Reglas obligatorias\n${bullets(ctx.reglas)}`);
-    const guias = list_(ctx.preguntas).filter(p => p.responder);
-    if (guias.length) out.push('## Respuestas para preguntas específicas\nCuando el usuario pregunte algo equivalente a lo siguiente, responde con esa información (puedes redactarla con tus palabras, sin cambiar el fondo):\n\n' +
-      guias.map(p => `- Pregunta: ${list_(p.si).map(q => `"${q}"`).join(', ')}\n  Respuesta: ${p.responder}`).join('\n'));
-    if (cfg.systemPrompt) out.push(`## Instrucciones adicionales\n${cfg.systemPrompt}`);
-    return out.join('\n\n');
-  }
-  const systemPrompt = buildSystemPrompt();
 
   // Busca una respuesta fija (fija: true) cuya palabra clave aparezca en la pregunta
   function fixedAnswer(text) {
@@ -661,7 +635,7 @@
         signal: ctrl.signal,
         body: JSON.stringify({
           model,
-          messages: [{ role: 'system', content: systemPrompt }, ...history.map(toApiMessage)],
+          messages: history.map(toApiMessage), // el prompt de sistema lo añade server.py (prompt.md)
           stream: true,
           max_tokens: cfg.maxTokens,
           temperature: cfg.temperature,
@@ -782,5 +756,5 @@
   setOpen(store.get('open', false), { focus: false });
   detectModel().catch(() => {});
 
-  window.omlxAssistant = { open: () => setOpen(true), close: () => setOpen(false), toggle: () => setOpen(!isOpen()), reset, systemPrompt: () => systemPrompt };
+  window.omlxAssistant = { open: () => setOpen(true), close: () => setOpen(false), toggle: () => setOpen(!isOpen()), reset };
 })();

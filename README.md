@@ -18,7 +18,8 @@ mcp_tickets.py          Servidor MCP «tickets»: registro de solicitudes en SQL
 gestion.py, gestion/    Página de gestión de tickets (solo local, puerto 5185)
 mcp.example.json        Plantilla para conectar ese servidor MCP a oMLX
 .env                    Tu API key y ajustes del servidor (privado, ignorado por git)
-contexto.js             Qué sabe el asistente, de qué habla y cómo responde
+prompt.md               Qué sabe el asistente y cómo responde (lo pone server.py; no es público)
+contexto.js             Respuestas fijas y preguntas sugeridas (las resuelve el navegador)
 img/                    Logo, avatar y favicons de Wodobox
 ```
 
@@ -53,7 +54,9 @@ El script arranca `server.py`, abre un túnel gratuito de Cloudflare y muestra l
 - **La URL cambia** cada vez que ejecutas el script y no tiene garantía de disponibilidad. Para una dirección fija (p. ej. `soporte.wodobox.com`) se usa un túnel con nombre y una cuenta gratuita de Cloudflare; no hace falta cambiar el código.
 - **Qué se expone:** solo los archivos de la web (`index.html`, `config.js`, `contexto.js`, `css/`, `assistant/`, `img/`) y 4 endpoints de oMLX (`/v1/chat/completions`, `/v1/models`, `/v1/models/status` resumido y `/health`). Todo lo demás, incluido `.env`, da 404.
 - **Protecciones** (ajustables en `.env`): máximo 2 respuestas generándose a la vez (`MAX_CONCURRENT`), 20 mensajes por minuto por visitante (`RATE_PER_MIN`), respuestas de hasta 1024 tokens (`MAX_TOKENS`) y mensajes de hasta 25 MB (`MAX_BODY_MB`).
-- **Ten en cuenta:** quien tenga la URL usa la potencia de tu Mac. El prompt de sistema (`contexto.js`) se ejecuta en el navegador, así que alguien con conocimientos técnicos podría modificarlo en su propia sesión.
+- **Prompt en el servidor:** `server.py` descarta cualquier prompt de sistema que envíe el navegador y usa siempre `prompt.md`, que no se publica. Así nadie puede cambiar las instrucciones ni usar el asistente como un chat genérico.
+- **Modelo fijo:** solo se aceptan los modelos ya cargados en oMLX (o el predeterminado si no hay ninguno); nadie puede obligar a cambiar el modelo en memoria.
+- **Ten en cuenta:** quien tenga la URL usa la potencia de tu Mac, dentro de los límites de arriba.
 
 ## Solicitudes a la Mesa de Ayuda (tickets)
 
@@ -106,7 +109,7 @@ Con `expose_tools` activado en oMLX, también puedes preguntar desde **tu** chat
 
 **Seguridad:** oMLX añade las herramientas MCP a todos los chats, pero `server.py` fuerza `tool_choice: "none"` en los chats de la web pública y no expone ningún endpoint `/v1/mcp/*`. Los visitantes no pueden listar ni modificar tickets; solo crear el suyo con el botón. Si el registro falla, el usuario recibe un aviso y puede reintentar.
 
-- El catálogo de servicios, la lista de software autorizado, las prioridades y los equipos resolutores se editan en `contexto.js`.
+- El catálogo de servicios, la lista de software autorizado, las prioridades y los equipos resolutores se editan en `prompt.md`.
 - Para usar un sistema de tickets real (Jira Service Management, GLPI, Freshdesk…) basta con otro servidor MCP con una herramienta de creación y apuntar `TICKETS_MCP_TOOL` (en `.env`) a ella.
 
 ## Configuración (`config.js`)
@@ -117,7 +120,6 @@ Con `expose_tools` activado en oMLX, también puedes preguntar desde **tu** chat
 | `assistantName`, `greeting` | Nombre y saludo inicial del asistente |
 | `avatar` | Imagen de la cabecera del panel del asistente (p. ej. `img/wodobox-avatar.png`) |
 | `modelLabel` | Nombre del modelo que se muestra en el panel (p. ej. `Wodobox-Bot`). Vacío = id real del modelo en oMLX |
-| `systemPrompt` | Instrucciones de comportamiento del modelo |
 | `tickets` | `{ endpoint: '/api/tickets' }` activa el botón «Enviar solicitud». `null` lo desactiva |
 | `maxTokens`, `temperature` | Longitud máxima y creatividad de las respuestas |
 | `enableThinking` | `true` para que los modelos con razonamiento "piensen" antes de responder (más lento) |
@@ -126,24 +128,20 @@ Con `expose_tools` activado en oMLX, también puedes preguntar desde **tu** chat
 
 **Modelo:** se elige solo. Usa el modelo cargado en oMLX; si no hay ninguno, el modelo por defecto del servidor (oMLX lo carga al primer mensaje).
 
-## Contexto del asistente (`contexto.js`)
+## Qué sabe el asistente (`prompt.md`)
 
-Define qué puede y debe responder el asistente. Todos los campos son opcionales:
+`prompt.md` es el prompt de sistema completo: identidad, tono, proceso de atención, catálogo de servicios, software autorizado, prioridades, equipos resolutores, reglas y guías para preguntas concretas. `server.py` lo añade a cada consulta y **descarta cualquier otro prompt que envíe el navegador**. No se publica en la web (da 404) y los cambios se aplican en la siguiente consulta, sin reiniciar nada.
+
+## Respuestas fijas y sugerencias (`contexto.js`)
+
+Lo único que resuelve el navegador, sin consultar al modelo:
 
 | Campo | Qué hace |
 |---|---|
-| `identidad` | Quién es el asistente y cuál es su objetivo |
-| `tono` | Lista de pautas de estilo |
-| `conocimiento` | Texto (Markdown) con toda la información que el asistente puede usar. Es su única fuente de verdad |
-| `temasPermitidos` | Temas sobre los que puede hablar |
-| `fueraDeTema` | `permitir: false` hace que rechace otros temas con el texto de `respuesta` |
-| `reglas` | Obligaciones y prohibiciones (p. ej. "no inventes precios") |
-| `preguntas` | Respuestas para preguntas concretas: `si` (frases o palabras clave), `responder` y `fija` |
+| `preguntas` | Con `fija: true`, responde el texto de `responder` al instante cuando la pregunta contiene alguna de las palabras de `si` (sin distinguir mayúsculas ni tildes) |
 | `sugerencias` | Botones de preguntas que aparecen al empezar una conversación |
 
-En `preguntas`, `fija: false` le da la respuesta al modelo como guía (él la redacta). `fija: true` responde ese texto exacto al instante, sin consultar al modelo, cuando la pregunta contiene alguna de las palabras de `si` (sin distinguir mayúsculas ni tildes).
-
-Para ver el prompt final que recibe el modelo, abre la consola del navegador y ejecuta `omlxAssistant.systemPrompt()`. Si borras `contexto.js` (o su `<script>` en `index.html`), el asistente vuelve a usar solo el `systemPrompt` de `config.js`.
+Si agregas una respuesta fija aquí, conviene mencionarla también en `prompt.md` para que el modelo responda lo mismo cuando la pregunta llegue con otras palabras.
 
 ## Adjuntar imágenes y documentos
 

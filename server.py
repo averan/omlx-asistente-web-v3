@@ -78,12 +78,19 @@ TICKET_FIELDS = {'tipo': 60, 'titulo': 200, 'categoria': 200, 'descripcion': 400
                  'correo': 200, 'telefono': 60, 'prioridad': 60, 'equipo': 120, 'evidencias': 600}
 TICKET_REQUIRED = ('titulo', 'descripcion', 'nombre', 'correo')
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+PROMPT_FILE = os.path.join(ROOT, 'prompt.md')  # prompt de sistema: lo pone el servidor, no el navegador
 
 slots = threading.BoundedSemaphore(MAX_CONCURRENT)
 hits = defaultdict(deque)
 hits_lock = threading.Lock()
 models_cache = {'t': None, 'ids': set()}
 models_lock = threading.Lock()
+
+
+def system_prompt():
+    """Se lee en cada consulta: los cambios en prompt.md se aplican sin reiniciar."""
+    with open(PROMPT_FILE, encoding='utf-8') as f:
+        return f.read().strip()
 
 
 def sniff_type(data, name):
@@ -367,6 +374,9 @@ class Handler(BaseHTTPRequestHandler):
         body['max_tokens'] = min(int(body.get('max_tokens') or MAX_TOKENS), MAX_TOKENS)
         # los visitantes nunca pueden usar herramientas (p. ej. las MCP de tickets que oMLX añade a los chats)
         body.pop('tools', None)
+        # el prompt de sistema lo pone el servidor: se descarta cualquier otro que envíe el navegador
+        body['messages'] = [{'role': 'system', 'content': system_prompt()}] + [
+            m for m in body['messages'] if isinstance(m, dict) and m.get('role') in ('user', 'assistant')]
         body['tool_choice'] = 'none'
 
         if not slots.acquire(blocking=False):
@@ -404,6 +414,7 @@ def main():
         return print('Los tickets ahora están en la base de datos. Usa:  python3 mcp_tickets.py listar')
     if not API_KEY:
         print('Aviso: OMLX_API_KEY no está definida en .env; se llamará a oMLX sin clave.')
+    system_prompt()  # falla al arrancar si falta prompt.md
     srv = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
     srv.daemon_threads = True
     print(f'Asistente en http://localhost:{PORT}  →  oMLX en {OMLX.geturl()}  '

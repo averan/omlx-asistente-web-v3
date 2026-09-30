@@ -10,9 +10,8 @@ window.OMLX_ASSISTANT = {
   // Imagen de la cabecera del panel (vacío = degradado de color)
   avatar: 'img/wodobox-avatar.png',
   greeting: 'Hola, soy Wodobox-Bot de la Mesa de Ayuda. Puedo registrar un problema o pedir un servicio por ti (licencias, accesos, VPN, software, equipos). ¿Qué necesitas?',
-  // Instrucciones generales extra. Lo principal (identidad, conocimiento, temas,
-  // reglas y respuestas a preguntas) se define en contexto.js
-  systemPrompt: 'Usa Markdown cuando ayude a la claridad.',
+  // Lo que sabe el asistente y cómo responde está en prompt.md (lo pone server.py);
+  // contexto.js solo tiene las respuestas fijas y las sugerencias.
 
   // Registro de solicitudes: server.py las guarda con número TCK-… (vacío/null = sin botón de envío)
   tickets: { endpoint: '/api/tickets' },
