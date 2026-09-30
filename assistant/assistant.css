@@ -197,3 +197,92 @@
 @media (prefers-reduced-motion: reduce) {
   .oa-root *, .oa-root *::before, .oa-root *::after { animation: none !important; transition: none !important; }
 }
+
+/* =====================================================================
+   TEMA «Wodobox» — azul marino #002B49 + coral #FF375A, Open Sans,
+   botones píldora y degradado coral → azul marino.
+   Para volver al tema anterior basta con borrar este bloque.
+   ===================================================================== */
+.oa-root {
+  --oa-navy: #002b49;
+  --oa-coral: #ff375a;
+  --oa-grad: linear-gradient(90deg, #ff375a 0%, #002b49 100%);
+  --oa-bg: #ffffff;
+  --oa-surface: #f0f4f8;
+  --oa-text: #4b4f58;
+  --oa-heading: #002b49;
+  --oa-muted: #7d7d82;
+  --oa-border: #dddde1;
+  --oa-accent: #ff375a;
+  --oa-accent-text: #ffffff;
+  --oa-user: #002b49;
+  --oa-user-text: #ffffff;
+  --oa-link: #0170b9;
+  --oa-ok: #1fa971;
+  --oa-err: #c62828;
+  --oa-shadow: 0 24px 60px rgba(0, 43, 73, .22), 0 4px 14px rgba(0, 43, 73, .10);
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  .oa-root {
+    --oa-bg: #0d2031;
+    --oa-surface: #16304a;
+    --oa-text: #e3eaf1;
+    --oa-heading: #ffffff;
+    --oa-muted: #9fb2c4;
+    --oa-border: #244360;
+    --oa-accent: #ff4b6c;
+    --oa-user: #ff375a;
+    --oa-link: #6bb8ff;
+    --oa-err: #ff8a8a;
+    --oa-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+  }
+}
+
+/* lanzador con el degradado de la marca */
+.oa-root .oa-launcher { background: linear-gradient(135deg, #ff375a 0%, #002b49 100%); color: #fff; box-shadow: 0 10px 28px rgba(255, 55, 90, .38); }
+.oa-root .oa-launcher .oa-dot { border-color: #fff; }
+
+/* panel y cabecera */
+.oa-root .oa-panel { border-radius: 24px; border-color: transparent; }
+.oa-root .oa-header { background: var(--oa-grad); border-bottom: none; padding: 16px 14px 16px 18px; }
+.oa-root .oa-title strong { color: #fff; font-weight: 700; font-size: 16px; letter-spacing: 0; }
+.oa-root .oa-status { color: rgba(255, 255, 255, .85); }
+.oa-root .oa-icon-btn { color: rgba(255, 255, 255, .9); border-radius: 50%; }
+.oa-root .oa-icon-btn:hover { background: rgba(255, 255, 255, .16); color: #fff; }
+.oa-root .oa-avatar { background: #fff; border-radius: 50%; }
+.oa-root .oa-avatar.oa-avatar-img { background: #fff; border-radius: 50%; padding: 4px; width: 38px; height: 38px; }
+.oa-root .oa-resize-nw::before { border-color: rgba(255, 255, 255, .8); }
+
+/* mensajes */
+.oa-root .oa-msg { border-radius: 18px; }
+.oa-root .oa-msg.oa-assistant { background: var(--oa-surface); border-bottom-left-radius: 6px; }
+.oa-root .oa-msg.oa-user { background: var(--oa-user); color: var(--oa-user-text); border-bottom-right-radius: 6px; }
+.oa-root .oa-msg h4, .oa-root .oa-msg.oa-assistant strong { color: var(--oa-heading); }
+.oa-root .oa-msg a { color: var(--oa-link); }
+.oa-root .oa-typing i { background: var(--oa-coral); }
+
+/* preguntas sugeridas: píldoras coral */
+.oa-root .oa-suggest button { border-radius: 800px; border: 1.5px solid var(--oa-accent); color: var(--oa-accent); font-weight: 600; padding: 7px 14px; }
+.oa-root .oa-suggest button:hover { background: var(--oa-accent); color: #fff; }
+
+/* cuadro de texto en píldora y botón de envío coral */
+.oa-root .oa-composer { border-top-color: var(--oa-border); }
+.oa-root .oa-input-wrap { border-radius: 28px; background: var(--oa-surface); border-color: transparent; padding: 6px 6px 6px 16px; }
+.oa-root .oa-input-wrap:focus-within { border-color: var(--oa-accent); box-shadow: 0 0 0 3px rgba(255, 55, 90, .15); }
+.oa-root .oa-send { border-radius: 50%; background: var(--oa-accent); width: 38px; height: 38px; box-shadow: 0 4px 12px rgba(255, 55, 90, .35); }
+.oa-root .oa-attach { border-radius: 50%; }
+
+/* solicitud lista para enviar */
+.oa-root .oa-ticket-bar button { border-radius: 800px; padding: 8px 18px; }
+.oa-root .oa-ticket-send { background: var(--oa-accent); border-color: var(--oa-accent); color: #fff; }
+.oa-root .oa-ticket-fix { background: transparent; border-color: var(--oa-heading); color: var(--oa-heading); }
+
+/* adjuntos */
+.oa-root .oa-chip { border-radius: 12px; }
+.oa-root .oa-chip-icon { background: rgba(255, 55, 90, .12); color: var(--oa-accent); }
+.oa-root .oa-drop { border-color: var(--oa-accent); }
+.oa-root .oa-drop div { color: var(--oa-accent); }
+@media (max-width: 480px) {
+  .oa-root .oa-panel { border-radius: 0; }
+}
